@@ -17,16 +17,106 @@ Author: Spark QA Team
 """
 
 import sys
-from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QWidget, 
-                               QLabel, QPushButton, QHBoxLayout, QComboBox, 
-                               QMessageBox, QInputDialog, QTextEdit)
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPixmap, QImage
+import os
 import cv2
 import numpy as np
+from datetime import datetime
+from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QWidget, 
+                               QLabel, QPushButton, QHBoxLayout, QComboBox, 
+                               QMessageBox, QInputDialog, QTextEdit, QProgressBar)
+from PySide6.QtCore import Qt, QTimer, QThread, Signal
+from PySide6.QtGui import QPixmap, QImage, QPainter, QPen, QColor, QAction
 from camera import CameraManager
 from qa_manager import QAManager
 from inspector import PCBInspector
+from openai_api import OpenAIAnalyzer
+import json
+from pathlib import Path
+
+CONFIG_PATH = Path.home() / ".pcb_inspector_config.json"
+
+def load_api_key():
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                data = json.load(f)
+                return data.get('openai_api_key', None)
+        except Exception:
+            return None
+    return None
+
+def save_api_key(api_key):
+    with open(CONFIG_PATH, 'w') as f:
+        json.dump({'openai_api_key': api_key}, f)
+
+class InspectionWorker(QThread):
+    """Background worker for performing AI inspection."""
+    
+    progress_updated = Signal(str)
+    inspection_complete = Signal(dict)
+    inspection_error = Signal(str)
+    
+    def __init__(self, current_image_path, qa_sample_id, qa_manager, inspector, ai_analyzer):
+        super().__init__()
+        self.current_image_path = current_image_path
+        self.qa_sample_id = qa_sample_id
+        self.qa_manager = qa_manager
+        self.inspector = inspector
+        self.ai_analyzer = ai_analyzer
+    
+    def run(self):
+        """Perform the inspection in background thread."""
+        try:
+            self.progress_updated.emit("Loading QA sample...")
+            
+            # Get QA sample images
+            sample = self.qa_manager.get_qa_sample(self.qa_sample_id)
+            if not sample:
+                self.inspection_error.emit("QA sample not found")
+                return
+            
+            front_path = sample["image_paths"]["front"]
+            back_path = sample["image_paths"]["back"]
+            
+            self.progress_updated.emit("Performing computer vision analysis...")
+            
+            # Load images for OpenCV analysis
+            current_img = cv2.imread(self.current_image_path)
+            reference_img = cv2.imread(front_path)  # Assume front for now
+            
+            if current_img is None or reference_img is None:
+                self.inspection_error.emit("Failed to load images for analysis")
+                return
+            
+            # Perform OpenCV alignment and comparison
+            aligned_img, alignment_info = self.inspector.align_images(reference_img, current_img)
+            comparison_result = self.inspector.compare_images(reference_img, aligned_img)
+            defect_analysis = self.inspector.analyze_defects(reference_img, aligned_img, comparison_result)
+            
+            self.progress_updated.emit("Performing AI analysis...")
+            
+            # Perform AI analysis
+            ai_result = self.ai_analyzer.compare_pcb_images(self.current_image_path, front_path)
+            
+            self.progress_updated.emit("Generating comprehensive report...")
+            
+            # Combine results
+            combined_result = {
+                "opencv_analysis": {
+                    "alignment": alignment_info,
+                    "comparison": comparison_result,
+                    "defects": defect_analysis
+                },
+                "ai_analysis": ai_result,
+                "timestamp": datetime.now().isoformat(),
+                "qa_sample_id": self.qa_sample_id,
+                "current_image_path": self.current_image_path
+            }
+            
+            self.inspection_complete.emit(combined_result)
+            
+        except Exception as e:
+            self.inspection_error.emit(f"Inspection failed: {str(e)}")
 
 class MainWindow(QMainWindow):
     """
@@ -49,12 +139,25 @@ class MainWindow(QMainWindow):
         self.camera = CameraManager()          # Handles webcam capture
         self.qa_manager = QAManager()          # Manages QA sample database
         self.inspector = PCBInspector()        # Performs image analysis
+        
+        # Get API key from environment and initialize AI analyzer
+        api_key = load_api_key()
+        if not api_key:
+            api_key, ok = QInputDialog.getText(self, "OpenAI API Key Required", "Enter your OpenAI API key:")
+            if ok and api_key:
+                save_api_key(api_key)
+            else:
+                QMessageBox.critical(self, "API Key Required", "An OpenAI API key is required to use this application.")
+                sys.exit(1)
+        self.ai_analyzer = OpenAIAnalyzer(api_key=api_key)    # AI-powered analysis
+        
         self.camera_connected = self.camera.connect()  # Connect to webcam
         
         # Track current board state
         self.current_board_name = ""           # Name of currently selected board
         self.front_captured = False            # Whether front image is captured
         self.back_captured = False             # Whether back image is captured
+        self.inspection_worker = None          # Background inspection worker
         
         # Setup the user interface
         self.setup_ui()
@@ -92,6 +195,13 @@ class MainWindow(QMainWindow):
         
         # Apply dark theme styling
         self.apply_dark_theme()
+        
+        # Add a menu option to update the API key
+        menubar = self.menuBar()
+        settings_menu = menubar.addMenu("Settings")
+        api_key_action = QAction("Set OpenAI API Key", self)
+        api_key_action.triggered.connect(self.prompt_api_key)
+        settings_menu.addAction(api_key_action)
     
     def create_header(self, layout):
         """Create the application header with title."""
@@ -165,6 +275,23 @@ class MainWindow(QMainWindow):
             font-size: 14px;
         """)
         layout.addWidget(self.status_label)
+        
+        # Add progress bar for inspection
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid #52525b;
+                border-radius: 5px;
+                text-align: center;
+                background-color: #18181b;
+            }
+            QProgressBar::chunk {
+                background-color: #38bdf8;
+                border-radius: 5px;
+            }
+        """)
+        layout.addWidget(self.progress_bar)
     
     def create_camera_preview(self, layout):
         """Create the camera preview area for live webcam feed."""
@@ -460,7 +587,7 @@ class MainWindow(QMainWindow):
                 self.result_label.setText(f"Error saving QA sample: {str(e)}")
     
     def inspect_board(self):
-        """Inspect the current board against its QA sample."""
+        """Inspect the current board against its QA sample using AI and computer vision."""
         # Validate that a board is selected
         if not self.current_board_name:
             QMessageBox.warning(self, "No Board Selected", "Please select a board to inspect.")
@@ -472,8 +599,25 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "No QA Sample", "Please create a QA sample for this board first.")
             return
         
+        # Check if OpenAI API is available
+        if not self.ai_analyzer.api_key:
+            QMessageBox.warning(self, "OpenAI API Not Configured", 
+                              "Please set your OPENAI_API_KEY environment variable for AI-powered inspection.")
+            return
+        
+        # Capture current board image for inspection
+        if not self.camera_connected:
+            QMessageBox.warning(self, "Camera Not Connected", "Please connect your webcam to perform inspection.")
+            return
+        
+        # Capture current image
+        current_frame = self.camera.capture_snapshot("current_inspection.jpg")
+        if current_frame is None:
+            QMessageBox.warning(self, "Capture Failed", "Failed to capture current board image.")
+            return
+        
         # Show inspection in progress
-        self.result_label.setText("Inspection in progress...")
+        self.result_label.setText("Inspection in progress...\n\nAnalyzing board with AI and computer vision...")
         self.result_label.setStyleSheet("""
             background-color: #18181b; 
             border: 1px solid #f59e0b; 
@@ -483,20 +627,198 @@ class MainWindow(QMainWindow):
             font-size: 16px;
         """)
         
-        # TODO: Implement actual inspection logic using inspector.py
-        # This would:
-        # 1. Capture current board image
-        # 2. Load QA sample images
-        # 3. Align and compare images
-        # 4. Detect defects and generate report
-        # 5. Display results in the UI
+        # Disable inspection button during analysis
+        self.inspect_btn.setEnabled(False)
+        self.inspect_btn.setText("Inspecting...")
+        
+        # Show progress bar
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setRange(0, 0)  # Indeterminate progress
+        
+        # Start background inspection
+        self.inspection_worker = InspectionWorker(
+            "current_inspection.jpg",
+            sample_id,
+            self.qa_manager,
+            self.inspector,
+            self.ai_analyzer
+        )
+        
+        # Connect signals
+        self.inspection_worker.progress_updated.connect(self.update_inspection_progress)
+        self.inspection_worker.inspection_complete.connect(self.handle_inspection_complete)
+        self.inspection_worker.inspection_error.connect(self.handle_inspection_error)
+        
+        # Start the inspection
+        self.inspection_worker.start()
+    
+    def update_inspection_progress(self, message):
+        """Update the progress display during inspection."""
+        self.status_label.setText(f"Inspection: {message}")
+    
+    def handle_inspection_complete(self, results):
+        """Handle completed inspection results."""
+        # Hide progress bar
+        self.progress_bar.setVisible(False)
+        
+        # Re-enable inspection button
+        self.inspect_btn.setEnabled(True)
+        self.inspect_btn.setText("Inspect Board")
+        
+        # Display results
+        self.display_inspection_results(results)
+        
+        # Update status
+        self.status_label.setText("Inspection completed successfully!")
+    
+    def handle_inspection_error(self, error_message):
+        """Handle inspection errors."""
+        # Hide progress bar
+        self.progress_bar.setVisible(False)
+        
+        # Re-enable inspection button
+        self.inspect_btn.setEnabled(True)
+        self.inspect_btn.setText("Inspect Board")
+        
+        # Show error message
+        self.result_label.setText(f"Inspection failed: {error_message}")
+        self.result_label.setStyleSheet("""
+            background-color: #18181b; 
+            border: 1px solid #ef4444; 
+            border-radius: 5px; 
+            padding: 50px; 
+            color: #ef4444;
+            font-size: 16px;
+        """)
+        
+        # Update status
+        self.status_label.setText("Inspection failed. Please try again.")
+    
+    def display_inspection_results(self, results):
+        """Display comprehensive inspection results in the UI."""
+        try:
+            # Extract results
+            opencv_results = results.get("opencv_analysis", {})
+            ai_results = results.get("ai_analysis", {})
+            
+            # Build result text
+            result_text = f"""
+INSPECTION RESULTS
+==================
+Board: {self.current_board_name}
+Timestamp: {results.get('timestamp', 'N/A')}
+
+COMPUTER VISION ANALYSIS:
+"""
+            
+            # OpenCV results
+            comparison = opencv_results.get("comparison", {})
+            if "similarity_score" in comparison:
+                similarity = comparison["similarity_score"]
+                result_text += f"Similarity Score: {similarity:.2%}\n"
+                
+                if similarity >= 0.95:
+                    result_text += "Status: PASS (High similarity)\n"
+                elif similarity >= 0.85:
+                    result_text += "Status: NEEDS REVIEW (Moderate similarity)\n"
+                else:
+                    result_text += "Status: FAIL (Low similarity)\n"
+            
+            defects = opencv_results.get("defects", {})
+            if defects and "total_defects" in defects:
+                result_text += f"Defects Detected: {defects['total_defects']}\n"
+                result_text += f"Severity: {defects.get('severity', 'Unknown')}\n"
+            
+            # AI results
+            if ai_results.get("success"):
+                ai_analysis = ai_results.get("analysis", {})
+                result_text += f"""
+
+AI ANALYSIS:
+Overall Quality: {ai_analysis.get('overall_quality', 'Unknown')}
+Confidence: {ai_analysis.get('confidence_score', 0):.1%}
+
+Defects Found: {len(ai_analysis.get('defects_found', []))}
+Components Identified: {len(ai_analysis.get('components_identified', []))}
+
+COMPARISON NOTES:
+{ai_analysis.get('comparison_notes', 'No comparison notes available.')}
+
+DETAILED DEFECTS:
+"""
+                defects = ai_analysis.get('defects_found', [])
+                if defects:
+                    for i, defect in enumerate(defects, 1):
+                        result_text += f"{i}. {defect.get('type', 'Unknown')} - {defect.get('description', 'No description')}\n"
+                else:
+                    result_text += "No defects detected by AI.\n"
+                
+                result_text += "\nRECOMMENDATIONS:\n"
+                recommendations = ai_analysis.get('recommendations', [])
+                if recommendations:
+                    for i, rec in enumerate(recommendations[:3], 1):  # Show first 3
+                        result_text += f"{i}. {rec}\n"
+                else:
+                    result_text += "No specific recommendations from AI.\n"
+            else:
+                result_text += "\nAI Analysis: Failed or not available\n"
+            
+            # Update UI
+            self.result_label.setText(result_text)
+            
+            # Set color based on overall result
+            if ai_results.get("success"):
+                ai_analysis = ai_results.get("analysis", {})
+                quality = ai_analysis.get('overall_quality', 'needs_review')
+                
+                if quality == 'pass':
+                    color = "#10b981"  # Green
+                elif quality == 'fail':
+                    color = "#ef4444"  # Red
+                else:
+                    color = "#f59e0b"  # Yellow
+            else:
+                color = "#f59e0b"  # Yellow for needs review
+            
+            self.result_label.setStyleSheet(f"""
+                background-color: #18181b; 
+                border: 1px solid {color}; 
+                border-radius: 5px; 
+                padding: 20px; 
+                color: {color};
+                font-size: 14px;
+                text-align: left;
+            """)
+            
+        except Exception as e:
+            self.result_label.setText(f"Error displaying results: {str(e)}")
+            self.result_label.setStyleSheet("""
+                background-color: #18181b; 
+                border: 1px solid #ef4444; 
+                border-radius: 5px; 
+                padding: 50px; 
+                color: #ef4444;
+                font-size: 16px;
+            """)
     
     def closeEvent(self, event):
         """Handle application shutdown - clean up camera connection."""
         if self.camera_connected:
             self.camera.disconnect()
+        
+        # Stop any running inspection
+        if self.inspection_worker and self.inspection_worker.isRunning():
+            self.inspection_worker.terminate()
+            self.inspection_worker.wait()
+        
         event.accept()
 
+    def prompt_api_key(self):
+        api_key, ok = QInputDialog.getText(self, "Set OpenAI API Key", "Enter your OpenAI API key:")
+        if ok and api_key:
+            save_api_key(api_key)
+            self.ai_analyzer.api_key = api_key
+            QMessageBox.information(self, "API Key Updated", "OpenAI API key updated successfully.")
 
 def main():
     """Main application entry point."""
