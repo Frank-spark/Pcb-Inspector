@@ -13,6 +13,7 @@ This desktop application provides automated visual inspection of PCBs using a st
 * [COMPLETED] Identify missing, rotated, or misplaced components using AI.
 * [COMPLETED] Provide a modern, intuitive UI with PySide6.
 * [COMPLETED] Generate human-readable QA reports describing defects.
+* [COMPLETED] User-friendly API key management with persistent storage.
 
 ---
 
@@ -34,6 +35,7 @@ This desktop application provides automated visual inspection of PCBs using a st
   * Rotated/mirrored components
   * Missing parts
   * Soldering defects
+  * Completely different boards
 
 ### [COMPLETED] User Interface (IMPLEMENTED)
 
@@ -45,6 +47,7 @@ This desktop application provides automated visual inspection of PCBs using a st
 * [COMPLETED] Result summary with comprehensive analysis
 * [COMPLETED] Auto-save QA samples when both images captured
 * [COMPLETED] Real-time progress indicators and visual feedback
+* [COMPLETED] Settings menu for API key management
 
 ---
 
@@ -64,11 +67,12 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Sample validation and error handling
 
 3. **User Interface**
-   - Modern desktop application
+   - Modern desktop application with dark theme
    - Board selection dropdown
    - Status tracking and visual feedback
    - Responsive button states based on workflow
    - Progress indicators during inspection
+   - Settings menu for API key management
 
 4. **Board Recognition**
    - Automatic detection of existing boards
@@ -81,6 +85,8 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Component identification
    - Structured JSON response parsing
    - Background processing for non-blocking UI
+   - **Enhanced comparison logic** for detecting different boards
+   - **Detailed comparison notes** in results
 
 6. **Inspection Engine**
    - Combined OpenCV + AI analysis
@@ -88,6 +94,13 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Defect detection and severity assessment
    - Comprehensive result reporting
    - Color-coded quality indicators
+   - **Improved defect detection** for missing components and layout differences
+
+7. **API Key Management**
+   - User-friendly dialog for API key entry
+   - Persistent storage in config file
+   - Settings menu for key updates
+   - Secure handling without environment variables
 
 ### [PENDING] Future Enhancements
 
@@ -176,6 +189,7 @@ python main.py
 
 1. **First Time Setup**
    - Launch application
+   - Enter your OpenAI API key when prompted
    - Click "New Board" and enter board name
    - Capture front image using "Capture Front"
    - Capture back image using "Capture Back"
@@ -192,6 +206,11 @@ python main.py
    - Automatic board recognition on startup
    - Easy switching between different board types
 
+4. **API Key Management**
+   - Access Settings menu to update API key
+   - Key is automatically loaded on startup
+   - No need to set environment variables
+
 ---
 
 ## Test Schema
@@ -206,6 +225,8 @@ python main.py
 | [COMPLETED] OpenAI API Integration | Send image to GPT-4o Vision     | Returns structured analysis       |
 | [COMPLETED] Inspection Workflow | Complete inspection process      | Full analysis with results display |
 | [COMPLETED] Background Processing | Non-blocking UI during analysis | Responsive interface during AI calls |
+| [COMPLETED] API Key Management  | Enter and update API key via UI  | Persistent storage and loading    |
+| [COMPLETED] Different Board Detection | Show completely different board | AI correctly marks as "FAIL"      |
 
 ---
 
@@ -217,6 +238,7 @@ python main.py
 | Rotated Component | Rotate 1 diode            | GPT detects and describes rotation |
 | Missing Component | Remove 1 cap              | GPT detects absence                |
 | Misaligned Board  | Place board off-center    | Auto-aligns and inspects correctly |
+| Different Board   | Show completely different board | AI marks as "FAIL" with explanation |
 
 ---
 
@@ -239,6 +261,7 @@ requests==2.31.0
 numpy==1.24.3
 Pillow==10.0.1
 openai==1.3.0
+scikit-image==0.21.0
 ```
 
 ---
@@ -264,13 +287,21 @@ openai==1.3.0
 9. [COMPLETED] Integrate `openai_api.py` with mismatched regions
 10. [COMPLETED] Display results in UI as AI-inspected overlays
 11. [COMPLETED] Generate detailed defect reports
+12. [COMPLETED] Enhanced comparison logic for different boards
 
-### [PENDING] Phase 4: Testing & Polish (PENDING)
+### [COMPLETED] Phase 4: User Experience (COMPLETED)
 
-12. [PENDING] Create `test/` directory and implement test suite
-13. [PENDING] Evaluate results from rotated boards
-14. [PENDING] Validate GPT defect output
-15. [PENDING] Performance optimization and error handling
+13. [COMPLETED] API key management via UI
+14. [COMPLETED] Persistent configuration storage
+15. [COMPLETED] Settings menu for key updates
+16. [COMPLETED] Improved error handling and user feedback
+
+### [PENDING] Phase 5: Testing & Polish (PENDING)
+
+17. [PENDING] Create `test/` directory and implement test suite
+18. [PENDING] Evaluate results from rotated boards
+19. [PENDING] Validate GPT defect output
+20. [PENDING] Performance optimization and error handling
 
 ---
 
@@ -281,6 +312,7 @@ openai==1.3.0
 - **Vision Capabilities**: Full image analysis and defect detection
 - **Response Format**: Structured JSON with defect details and recommendations
 - **Processing**: Background threads for non-blocking UI
+- **Comparison Logic**: Enhanced prompts for detecting different boards
 
 ### Performance Features
 - **Real-time camera preview** at 33 FPS
@@ -288,6 +320,15 @@ openai==1.3.0
 - **Combined OpenCV + AI** for comprehensive inspection
 - **Progress indicators** during analysis
 - **Error handling** for network and API issues
+- **Persistent API key storage** for seamless user experience
+
+### Recent Improvements
+- **User-friendly API key entry** via dialog instead of environment variables
+- **Enhanced AI comparison logic** for better detection of different boards
+- **Detailed comparison notes** in inspection results
+- **Settings menu** for API key management
+- **Improved error handling** and user feedback
+- **Added scikit-image dependency** for better image processing
 
 ---
 
