@@ -128,7 +128,7 @@ pcb_inspector/
 ### Installation
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/Frank-spark/Pcb-Inspector
 cd pcb_inspector
 
 # Install dependencies
