@@ -11,7 +11,7 @@ This desktop application provides automated visual inspection of PCBs using a st
 * [COMPLETED] Capture and save high-quality front and back images of a known-good PCB as a QA reference.
 * [COMPLETED] Allow boards to be scanned in any orientation or rotation.
 * [IN PROGRESS] Identify missing, rotated, or misplaced components using AI.
-* [COMPLETED] Provide a modern, intuitive UI with PySide6 + dark theme.
+* [COMPLETED] Provide a modern, intuitive UI with PySide6.
 * [IN PROGRESS] Generate human-readable QA reports describing defects.
 
 ---
@@ -37,7 +37,7 @@ This desktop application provides automated visual inspection of PCBs using a st
 
 ### [COMPLETED] User Interface (IMPLEMENTED)
 
-* [COMPLETED] Modern dark-mode PySide6 desktop application
+* [COMPLETED] Modern PySide6 desktop application
 * [COMPLETED] Live camera preview with webcam integration
 * [COMPLETED] One-click "Capture Front" / "Capture Back"
 * [COMPLETED] One-click "Inspect Board" (UI ready, backend pending)
@@ -63,7 +63,7 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Sample validation and error handling
 
 3. **User Interface**
-   - Modern dark-mode desktop application
+   - Modern desktop application
    - Board selection dropdown
    - Status tracking and visual feedback
    - Responsive button states based on workflow
