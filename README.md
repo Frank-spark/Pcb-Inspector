@@ -8,48 +8,48 @@ This desktop application provides automated visual inspection of PCBs using a st
 
 ## Goals
 
-* ✅ Capture and save high-quality front and back images of a known-good PCB as a QA reference.
-* ✅ Allow boards to be scanned in any orientation or rotation.
-* 🔄 Identify missing, rotated, or misplaced components using AI.
-* ✅ Provide a modern, intuitive UI with PySide6 + dark theme.
-* 🔄 Generate human-readable QA reports describing defects.
+* [COMPLETED] Capture and save high-quality front and back images of a known-good PCB as a QA reference.
+* [COMPLETED] Allow boards to be scanned in any orientation or rotation.
+* [IN PROGRESS] Identify missing, rotated, or misplaced components using AI.
+* [COMPLETED] Provide a modern, intuitive UI with PySide6 + dark theme.
+* [IN PROGRESS] Generate human-readable QA reports describing defects.
 
 ---
 
 ## Core Features
 
-### ✅ QA Reference Creation (IMPLEMENTED)
+### [COMPLETED] QA Reference Creation (IMPLEMENTED)
 
 * Capture **front** and **back** images of a new PCB.
 * Save images and metadata to `qa_samples/` directory.
 * Record board name, date, notes, etc.
 * **Smart board recognition** - automatically detects existing boards vs new ones.
 
-### 🔄 Inspection Engine (PARTIALLY IMPLEMENTED)
+### [IN PROGRESS] Inspection Engine (PARTIALLY IMPLEMENTED)
 
-* ✅ Use OpenCV to extract features from incoming webcam feed.
-* ✅ Align current scan with the QA sample regardless of rotation.
-* 🔄 Compare regions of interest using AI (GPT-4 Vision API).
-* 🔄 Detect:
+* [COMPLETED] Use OpenCV to extract features from incoming webcam feed.
+* [COMPLETED] Align current scan with the QA sample regardless of rotation.
+* [IN PROGRESS] Compare regions of interest using AI (GPT-4 Vision API).
+* [IN PROGRESS] Detect:
   * Rotated/mirrored components
   * Missing parts
   * Soldering defects
 
-### ✅ User Interface (IMPLEMENTED)
+### [COMPLETED] User Interface (IMPLEMENTED)
 
-* ✅ Modern dark-mode PySide6 desktop application
-* ✅ Live camera preview with webcam integration
-* ✅ One-click "Capture Front" / "Capture Back"
-* ✅ One-click "Inspect Board" (UI ready, backend pending)
-* ✅ Board selection dropdown with smart recognition
-* ✅ Result summary with status updates
-* ✅ Auto-save QA samples when both images captured
+* [COMPLETED] Modern dark-mode PySide6 desktop application
+* [COMPLETED] Live camera preview with webcam integration
+* [COMPLETED] One-click "Capture Front" / "Capture Back"
+* [COMPLETED] One-click "Inspect Board" (UI ready, backend pending)
+* [COMPLETED] Board selection dropdown with smart recognition
+* [COMPLETED] Result summary with status updates
+* [COMPLETED] Auto-save QA samples when both images captured
 
 ---
 
 ## Current Implementation Status
 
-### ✅ Completed Features
+### [COMPLETED] Completed Features
 
 1. **Camera Integration**
    - Live webcam preview at 33 FPS
@@ -73,7 +73,7 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Smart prompting for new board creation
    - Workflow guidance based on board state
 
-### 🔄 In Progress / Next Steps
+### [IN PROGRESS] In Progress / Next Steps
 
 1. **Inspection Engine Integration**
    - Connect inspector.py to UI
@@ -96,24 +96,24 @@ This desktop application provides automated visual inspection of PCBs using a st
 
 ```bash
 pcb_inspector/
-├── main.py                  # ✅ Launches PySide6 App with full UI
-├── camera.py                # ✅ Captures images from webcam
-├── inspector.py             # ✅ OpenCV + AI image comparison (backend ready)
-├── qa_manager.py            # ✅ Manages QA sample creation/storage
-├── openai_api.py            # 🔄 Sends image to GPT-4 Vision (pending)
+├── main.py                  # [COMPLETED] Launches PySide6 App with full UI
+├── camera.py                # [COMPLETED] Captures images from webcam
+├── inspector.py             # [COMPLETED] OpenCV + AI image comparison (backend ready)
+├── qa_manager.py            # [COMPLETED] Manages QA sample creation/storage
+├── openai_api.py            # [PENDING] Sends image to GPT-4 Vision
 ├── ui/
-│   ├── index.html           # ✅ Tailwind UI (alternative web version)
-│   └── app.js               # ✅ WebView frontend logic (alternative)
-├── qa_samples/              # ✅ Auto-created directory
+│   ├── index.html           # [COMPLETED] Tailwind UI (alternative web version)
+│   └── app.js               # [COMPLETED] WebView frontend logic (alternative)
+├── qa_samples/              # [COMPLETED] Auto-created directory
 │   └── sample_001/
 │       ├── front.jpg
 │       ├── back.jpg
 │       └── metadata.json
-├── test/                    # 🔄 Test suite (pending)
+├── test/                    # [PENDING] Test suite
 │   ├── test_alignment.py
 │   ├── test_ai_response.py
 │   └── test_camera.py
-└── requirements.txt         # ✅ Python dependencies
+└── requirements.txt         # [COMPLETED] Python dependencies
 ```
 
 ---
@@ -163,20 +163,20 @@ python main.py
 
 ## Test Schema
 
-### ✅ Functional Tests (IMPLEMENTED)
+### [COMPLETED] Functional Tests (IMPLEMENTED)
 
 | Feature             | Test                             | Expected Result                   |
 | ------------------- | -------------------------------- | --------------------------------- |
-| ✅ QA Sample Capture   | Front/back captured and saved    | Two valid image files, valid JSON |
-| ✅ Camera Feed         | Live preview shows webcam        | Real-time video stream in UI      |
-| ✅ Board Recognition   | Select existing vs new board     | Correct UI state and workflow     |
-| 🔄 Component Detection | Compare known-good to test board | Accurate match or defect found    |
-| 🔄 Rotation Handling   | Rotate board 90°, 180°, 270°     | Still passes/fails correctly      |
-| 🔄 GPT Analysis        | Send cropped mismatched region   | Returns meaningful description    |
+| [COMPLETED] QA Sample Capture   | Front/back captured and saved    | Two valid image files, valid JSON |
+| [COMPLETED] Camera Feed         | Live preview shows webcam        | Real-time video stream in UI      |
+| [COMPLETED] Board Recognition   | Select existing vs new board     | Correct UI state and workflow     |
+| [IN PROGRESS] Component Detection | Compare known-good to test board | Accurate match or defect found    |
+| [IN PROGRESS] Rotation Handling   | Rotate board 90°, 180°, 270°     | Still passes/fails correctly      |
+| [IN PROGRESS] GPT Analysis        | Send cropped mismatched region   | Returns meaningful description    |
 
 ---
 
-### 🔄 Accuracy Tests (PENDING)
+### [PENDING] Accuracy Tests (PENDING)
 
 | Test Case         | Setup                     | Pass Criteria                      |
 | ----------------- | ------------------------- | ---------------------------------- |
@@ -187,7 +187,7 @@ python main.py
 
 ---
 
-### 🔄 Regression Scripts (PENDING)
+### [PENDING] Regression Scripts (PENDING)
 
 * `test/test_alignment.py`: Simulates rotated board positions and checks matching
 * `test/test_ai_response.py`: Sends known images of errors and asserts descriptive output
@@ -212,32 +212,32 @@ openai==1.3.0
 
 ## Development Roadmap
 
-### ✅ Phase 1: Core Backend (COMPLETED)
+### [COMPLETED] Phase 1: Core Backend (COMPLETED)
 
-1. ✅ `camera.py` – Webcam capture & snapshot
-2. ✅ `qa_manager.py` – Save/retrieve QA images + metadata
-3. ✅ `inspector.py` – OpenCV alignment + comparison
-4. 🔄 `openai_api.py` – GPT-4 Vision request/response
+1. [COMPLETED] `camera.py` – Webcam capture & snapshot
+2. [COMPLETED] `qa_manager.py` – Save/retrieve QA images + metadata
+3. [COMPLETED] `inspector.py` – OpenCV alignment + comparison
+4. [IN PROGRESS] `openai_api.py` – GPT-4 Vision request/response
 
-### ✅ Phase 2: UI Integration (COMPLETED)
+### [COMPLETED] Phase 2: UI Integration (COMPLETED)
 
-5. ✅ `main.py` – PySide6 app with full UI
-6. ✅ Live preview, capture buttons, inspection trigger
-7. ✅ Board selection and management
-8. ✅ Status tracking and workflow guidance
+5. [COMPLETED] `main.py` – PySide6 app with full UI
+6. [COMPLETED] Live preview, capture buttons, inspection trigger
+7. [COMPLETED] Board selection and management
+8. [COMPLETED] Status tracking and workflow guidance
 
-### 🔄 Phase 3: AI Diagnostics (IN PROGRESS)
+### [IN PROGRESS] Phase 3: AI Diagnostics (IN PROGRESS)
 
-9. 🔄 Integrate `openai_api.py` with mismatched regions
-10. 🔄 Display results in UI as AI-inspected overlays
-11. 🔄 Generate detailed defect reports
+9. [IN PROGRESS] Integrate `openai_api.py` with mismatched regions
+10. [IN PROGRESS] Display results in UI as AI-inspected overlays
+11. [IN PROGRESS] Generate detailed defect reports
 
-### 🔄 Phase 4: Testing & Polish (PENDING)
+### [PENDING] Phase 4: Testing & Polish (PENDING)
 
-12. 🔄 Create `test/` directory and implement test suite
-13. 🔄 Evaluate results from rotated boards
-14. 🔄 Validate GPT defect output
-15. 🔄 Performance optimization and error handling
+12. [PENDING] Create `test/` directory and implement test suite
+13. [PENDING] Evaluate results from rotated boards
+14. [PENDING] Validate GPT defect output
+15. [PENDING] Performance optimization and error handling
 
 ---
 
