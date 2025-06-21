@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spark QA PCB Inspector</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#38bdf8',
+            accent: '#f472b6',
+            bg: '#18181b',
+            surface: '#27272a',
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-bg text-gray-100 min-h-screen">
+  <div class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-surface shadow-lg p-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold text-primary tracking-wide">Spark QA PCB Inspector</h1>
+      <span class="text-gray-400 text-sm">AI-Powered Visual QA</span>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col md:flex-row gap-8 p-8">
+      <!-- Camera Preview -->
+      <section class="flex-1 flex flex-col items-center justify-center bg-surface rounded-xl shadow-lg p-6">
+        <div class="w-full aspect-video bg-gray-800 rounded-lg flex items-center justify-center mb-4 border-2 border-gray-700">
+          <span class="text-gray-500">Live Camera Preview</span>
+        </div>
+        <div class="flex gap-4 mt-2">
+          <button class="px-4 py-2 bg-primary text-white rounded hover:bg-sky-500 transition">Capture Front</button>
+          <button class="px-4 py-2 bg-primary text-white rounded hover:bg-sky-500 transition">Capture Back</button>
+          <button class="px-4 py-2 bg-accent text-white rounded hover:bg-pink-400 transition">Inspect Board</button>
+        </div>
+      </section>
+
+      <!-- Result Summary -->
+      <section class="flex-1 flex flex-col bg-surface rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-4 text-primary">Result Summary</h2>
+        <div class="flex-1 flex flex-col justify-center items-center">
+          <div class="w-full bg-gray-900 rounded p-4 text-gray-300 text-center border border-gray-700">
+            <span class="text-gray-500">Inspection results will appear here.</span>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button class="px-4 py-2 bg-surface border border-primary text-primary rounded hover:bg-primary hover:text-white transition">Export PDF</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-surface text-gray-500 text-center py-3 text-xs border-t border-gray-800">
+      &copy; 2024 Spark QA | PCB Inspector | Powered by AI
+    </footer>
+  </div>
+</body>
+</html> 
