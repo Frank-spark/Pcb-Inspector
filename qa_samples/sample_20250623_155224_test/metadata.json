@@ -1,0 +1,12 @@
+{
+  "sample_id": "sample_20250623_155224_test",
+  "board_name": "test",
+  "created_date": "2025-06-23T15:52:24.769791",
+  "notes": "QA sample created for test",
+  "tags": [],
+  "image_paths": {
+    "front": "qa_samples\\sample_20250623_155224_test\\front.jpg",
+    "back": "qa_samples\\sample_20250623_155224_test\\back.jpg"
+  },
+  "version": "1.0"
+}

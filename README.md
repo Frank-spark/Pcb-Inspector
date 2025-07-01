@@ -14,6 +14,10 @@ This desktop application provides automated visual inspection of PCBs using a st
 * [COMPLETED] Provide a modern, intuitive UI with PySide6.
 * [COMPLETED] Generate human-readable QA reports describing defects.
 * [COMPLETED] User-friendly API key management with persistent storage.
+* [COMPLETED] **NEW: Advanced camera controls with zoom and focus capabilities.**
+* [COMPLETED] **NEW: Automatic board detection and recognition.**
+* [COMPLETED] **NEW: Auto-zoom functionality to focus on detected boards.**
+* [COMPLETED] **NEW: Intelligent Inspection Workflow (IMPLEMENTED)**
 
 ---
 
@@ -48,6 +52,26 @@ This desktop application provides automated visual inspection of PCBs using a st
 * [COMPLETED] Auto-save QA samples when both images captured
 * [COMPLETED] Real-time progress indicators and visual feedback
 * [COMPLETED] Settings menu for API key management
+* [COMPLETED] **NEW: Advanced camera controls with zoom, focus, and board detection**
+
+### [COMPLETED] **NEW: Advanced Camera Controls (IMPLEMENTED)**
+
+* [COMPLETED] **Zoom Controls**: Digital zoom from 0.5x to 4.0x with smooth scaling
+* [COMPLETED] **Focus Controls**: Toggle between auto-focus and manual focus modes
+* [COMPLETED] **Manual Focus**: Adjustable focus distance with slider control
+* [COMPLETED] **Board Detection**: Real-time PCB board detection using contour analysis
+* [COMPLETED] **Auto-Zoom**: Automatically zoom to fit detected boards in frame
+* [COMPLETED] **Visual Feedback**: Real-time board detection overlay with confidence scores
+* [COMPLETED] **Enhanced Image Processing**: Improved contrast and edge enhancement for better inspection
+
+### [COMPLETED] **NEW: Intelligent Inspection Workflow (IMPLEMENTED)**
+
+* [COMPLETED] **Auto-Detection**: Automatically detects PCB boards in camera view
+* [COMPLETED] **Auto-Zoom & Focus**: Automatically optimizes camera settings for capture
+* [COMPLETED] **Board Recognition**: Identifies known board types from existing QC samples
+* [COMPLETED] **QC Sample Creation**: Prompts to create QC samples for unknown boards
+* [COMPLETED] **Seamless Workflow**: One-click inspection with intelligent automation
+* [COMPLETED] **Smart Capture**: Auto-zoom and focus when capturing front/back images
 
 ---
 
@@ -59,12 +83,17 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Live webcam preview at 33 FPS
    - Image enhancement for better PCB inspection
    - Automatic camera detection and connection
+   - **NEW: Advanced zoom controls (0.5x - 4.0x)**
+   - **NEW: Focus controls (auto/manual with slider)**
+   - **NEW: Real-time board detection with visual overlay**
+   - **NEW: Intelligent auto-zoom and focus for optimal capture**
 
 2. **QA Sample Management**
    - Create and store QA samples with metadata
    - Board database with automatic recognition
    - Front/back image capture and storage
    - Sample validation and error handling
+   - **NEW: Automatic QC sample creation for unknown boards**
 
 3. **User Interface**
    - Modern desktop application with dark theme
@@ -73,11 +102,19 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Responsive button states based on workflow
    - Progress indicators during inspection
    - Settings menu for API key management
+   - **NEW: Camera control panel with zoom, focus, and detection buttons**
+   - **NEW: Real-time zoom level display**
+   - **NEW: Board detection status indicators**
+   - **NEW: Intelligent workflow prompts and guidance**
 
 4. **Board Recognition**
    - Automatic detection of existing boards
    - Smart prompting for new board creation
    - Workflow guidance based on board state
+   - **NEW: Real-time board detection using computer vision**
+   - **NEW: Confidence scoring for board detection**
+   - **NEW: Auto-zoom functionality to frame detected boards**
+   - **NEW: Automatic board type identification from existing samples**
 
 5. **AI Integration**
    - OpenAI GPT-4o Vision API integration
@@ -95,12 +132,27 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Comprehensive result reporting
    - Color-coded quality indicators
    - **Improved defect detection** for missing components and layout differences
+   - **NEW: Intelligent inspection workflow with auto-detection**
 
 7. **API Key Management**
    - User-friendly dialog for API key entry
    - Persistent storage in config file
    - Settings menu for key updates
    - Secure handling without environment variables
+
+8. **NEW: Advanced Camera Features**
+   - **Digital Zoom**: Software-based zoom with high-quality interpolation
+   - **Focus Control**: Hardware and software focus management
+   - **Board Detection**: Contour-based PCB detection with confidence scoring
+   - **Auto-Zoom**: Intelligent zoom adjustment to frame detected boards
+   - **Enhanced Processing**: Improved image quality for better inspection results
+
+9. **NEW: Intelligent Workflow**
+   - **One-Click Inspection**: Automatically detects, zooms, and inspects boards
+   - **Smart Board Recognition**: Identifies known boards from existing samples
+   - **QC Sample Creation**: Seamless workflow for unknown board types
+   - **Auto-Optimization**: Automatic camera settings for best results
+   - **User Guidance**: Clear prompts and instructions throughout the process
 
 ### [PENDING] Future Enhancements
 
@@ -114,6 +166,8 @@ This desktop application provides automated visual inspection of PCBs using a st
    - Component counting and verification
    - Solder joint analysis
    - Custom defect classification
+   - **Hardware zoom support for compatible cameras**
+   - **Advanced board tracking and stabilization**
 
 ---
 
@@ -122,10 +176,11 @@ This desktop application provides automated visual inspection of PCBs using a st
 ```bash
 pcb_inspector/
 ├── main.py                  # [COMPLETED] Launches PySide6 App with full UI + AI integration
-├── camera.py                # [COMPLETED] Captures images from webcam
+├── camera.py                # [COMPLETED] Captures images from webcam + NEW zoom/focus controls
 ├── inspector.py             # [COMPLETED] OpenCV + AI image comparison
 ├── qa_manager.py            # [COMPLETED] Manages QA sample creation/storage
 ├── openai_api.py            # [COMPLETED] Sends image to GPT-4o Vision
+├── test_camera_controls.py  # [NEW] Test script for camera features
 ├── ui/
 │   ├── index.html           # [COMPLETED] Tailwind UI (alternative web version)
 │   └── app.js               # [COMPLETED] WebView frontend logic (alternative)
@@ -185,31 +240,85 @@ To enable AI-powered PCB inspection, you need to set up your OpenAI API key:
 python main.py
 ```
 
+### Testing Camera Controls
+```bash
+# Test the new camera features
+python test_camera_controls.py
+
+# Test the intelligent inspection workflow
+python test_intelligent_inspection.py
+```
+
 ### Usage Workflow
 
+#### **NEW: Intelligent One-Click Inspection (Recommended)**
+1. **Place PCB in camera view**
+2. **Click "Inspect Board"** - The system will:
+   - Automatically detect the board
+   - Auto-zoom and focus for optimal capture
+   - Identify if it's a known board type
+   - If known: Perform full inspection immediately
+   - If unknown: Prompt to create QC sample
+
+#### **Traditional Manual Workflow**
 1. **First Time Setup**
    - Launch application
    - Enter your OpenAI API key when prompted
    - Click "New Board" and enter board name
-   - Capture front image using "Capture Front"
-   - Capture back image using "Capture Back"
+   - **Use zoom and focus controls to get optimal view**
+   - **Use "Detect Board" to verify board is properly framed**
+   - **Use "Auto Zoom to Board" for automatic framing**
+   - Capture front image using "Capture Front" (now with auto-zoom/focus)
+   - Capture back image using "Capture Back" (now with auto-zoom/focus)
    - QA sample automatically saved
 
 2. **Regular Inspection**
    - Select existing board from dropdown
+   - **Adjust camera settings for optimal inspection**
+   - **Use board detection to ensure proper alignment**
    - Click "Inspect Board" to compare against QA sample
-   - View comprehensive results with AI analysis
-   - Review recommendations and defect details
 
-3. **Board Management**
-   - All boards stored in `qa_samples/` directory
-   - Automatic board recognition on startup
-   - Easy switching between different board types
+#### **NEW: QC Sample Creation Workflow**
+When an unknown board is detected during inspection:
+1. **System prompts**: "Unknown board detected. Create QC sample?"
+2. **User confirms**: Enter board name when prompted
+3. **Auto-capture**: Front image automatically captured with optimal settings
+4. **Flip board**: User flips board to back side
+5. **Auto-capture**: Back image automatically captured with optimal settings
+6. **QC sample saved**: Ready for future inspections
 
-4. **API Key Management**
-   - Access Settings menu to update API key
-   - Key is automatically loaded on startup
-   - No need to set environment variables
+### NEW: Camera Control Features
+
+#### Zoom Controls
+- **Zoom In (+)**: Increase zoom level by 20%
+- **Zoom Out (−)**: Decrease zoom level by 20%
+- **Reset Zoom**: Return to 1.0x zoom level
+- **Zoom Range**: 0.5x to 4.0x with smooth scaling
+
+#### Focus Controls
+- **Auto Focus**: Enable automatic focus (recommended for most cases)
+- **Manual Focus**: Enable manual focus control
+- **Focus Slider**: Adjust focus distance when in manual mode (0-100%)
+
+#### Board Detection
+- **Detect Board**: Manually trigger board detection in current frame
+- **Auto Zoom to Board**: Automatically zoom to frame detected board
+- **Real-time Detection**: Continuous board detection with visual overlay
+- **Confidence Scoring**: Shows detection confidence percentage
+
+#### Intelligent Workflow
+- **One-Click Inspection**: Automatically handles detection, zoom, focus, and inspection
+- **Smart Recognition**: Identifies known boards from existing QC samples
+- **QC Sample Creation**: Seamless workflow for unknown board types
+- **Auto-Optimization**: Automatic camera settings for best results
+
+#### Tips for Best Results
+1. **Good Lighting**: Ensure adequate lighting for clear board visibility
+2. **Stable Camera**: Keep camera steady during capture
+3. **Proper Distance**: Position camera 10-20cm from board surface
+4. **Use Auto-Zoom**: Let the system automatically frame your board
+5. **Check Detection**: Verify board is detected before capturing images
+6. **Trust the System**: Use "Inspect Board" for the most intelligent workflow
 
 ---
 
